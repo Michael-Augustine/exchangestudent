@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Exchange</title> 
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.5.10/dist/vuetify.min.css" rel="stylesheet">
+    <link href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css" rel="stylesheet">
+</head>
+<style>   
+    /*----------------------------------------------- Padding for Boxes in side container ---------------------------------------------> */
+   .tight-vertical-col {
+     padding-top: 4px;    
+     padding-bottom: 4px; 
+     padding-left: 4px;  
+     padding-right: 4px;
+   }
+   /*----------------------------------------------- Heading Style ----------------------------------------------------------> */
+   .exchange-student-form {
+    background-color: #fafafa; /* Lighter shade */
+    border-radius: 10px; /* Adjusted border radius */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 20px; /* More padding for better spacing */
+    color: #333; /* Darker font color for better readability */
+    }
+
+.exchange-student-form .form-title {
+    font-size: 2rem; /* Slightly smaller font size */
+    color: #4A4A8B; /* A different shade of blue */
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); /* Softer text shadow */
+    margin-bottom: 15px; /* Added bottom margin for spacing */
+    }
+
+  /*----------------------------------------------- Applicant head Style ----------------------------------------------------------> */
+  .applicant-headline {
+    font-size: 24px; 
+    font-weight: bold; 
+    color: #205815; 
+    margin-bottom: 20px; 
+    text-align: left; 
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); 
+  } 
+  /*--------------------------------------------------------------------------------------------------------------------------------*/
+</style>
+
+<body>
+   <v-app id="app" :style="{background: $vuetify.theme.themes[theme].background}">      
+      <v-main>
+         <!-- <v-progress-linear :active="formLoading" indeterminate top absolute color="primary accent-4"></v-progress-linear> -->
+         <!-- --------------------------------------------- Heading ---------------------------------------------------------->
+         <v-container>
+            <v-form class="exchange-student-form">
+              <v-row>
+                <v-col>
+                  <div class="form-title text-center exchange-student-form">
+                    Exchange Student Portal
+                    <!-- <v-switch inset prepend-icon="mdi-account-arrow-right-outline" @click="darkMode" /> -->
+                  </div>                  
+                </v-col>
+              </v-row> 
+            </v-form>
+          </v-container>
+         <!-- --------------------------------------------- Personal Infromations ---------------------------------------------------------->         
+          <v-container>
+              <v-form
+                 ref="form"
+                 v-model="valid"
+                 lazy-validation
+                 :style="{background: $vuetify.theme.themes[theme].formBackground}"
+                 class="elevation-5 rounded-lg px-5 py-7">
+              <v-row>
+                     <v-col cols="12">
+                        <div class="headline applicant-headline" >Applicant Information</div>
+                     </v-col>
+
+                    <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                        <v-text-field
+                           label=" Chinese Name (Same as Passport)"
+                           v-model="formData.chinesename"
+                           outlined
+                           prepend-inner-icon="mdi-account-outline"
+                           :rules="requiredRules"/>
+                    </v-col>
+
+                    <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                     <v-text-field
+                        label="First Name (Same as Passport)"
+                        v-model="formData.firstName"
+                        outlined
+                        prepend-inner-icon="mdi-account-arrow-right-outline"
+                        :rules="requiredRules"/>
+                     </v-col>
+
+                     <v-col cols="12" md="4"class="mb-0 tight-vertical-col">
+                        <v-text-field
+                           label="Last Name (Same as Passport)"
+                           v-model="formData.lastName"
+                           outlined
+                           prepend-inner-icon="mdi-account-arrow-left-outline" 
+                           :rules="requiredRules"/>
+                     </v-col>
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                     <v-text-field
+                        label=" Student ID"
+                        v-model="formData.studentid"
+                        outlined
+                        prepend-inner-icon="mdi-account-key-outline"
+                        :rules="requiredRules"/>
+                     </v-col>
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                     <v-text-field
+                        label=" ID / ARC No."
+                        v-model="formData.idorarcno"
+                        outlined
+                        prepend-inner-icon="mdi-account-key-outline"
+                        :rules="requiredRules"/>
+                     </v-col>
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                     <v-select
+                       v-model="formData.gender"
+                       :items="genderOptions"
+                       label="Gender"
+                       outlined
+                       :rules="genderRules"
+                       prepend-inner-icon="mdi-account-switch-outline"
+                       return-object>
+                     </v-select>
+                     </v-col>   
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                     <v-combobox
+                        label="Nationality"
+                        v-model="formData.nationality"
+                        :items="nationalities"
+                        outlined
+                        prepend-inner-icon="mdi-earth"
+                        :rules="requiredRules">
+                     </v-combobox>
+                     </v-col>
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                        <v-menu
+                          ref="menu"
+                          v-model="menu"
+                          :close-on-content-click="false"
+                          transition="scale-transition"
+                          offset-y
+                          min-width="auto"
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              label="Date of Birth"
+                              v-model="formData.dateOfBirth"                              
+                              outlined
+                              prepend-inner-icon="mdi-calendar"
+                              readonly
+                              v-bind="attrs"
+                              v-on="on"
+                              :rules="requiredRules"
+                            ></v-text-field>
+                          </template>
+                          <v-date-picker
+                            v-model="formData.dateOfBirth"
+                            @input="menu = false"
+                          ></v-date-picker>
+                        </v-menu>
+                      </v-col>
+
+                      <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                        <v-combobox
+                          label="Vulnerable Student (Only Taiwanese must answer this question)"
+                          v-model="formData.vulnerableStudent"
+                          :items="vulnerableOptions"
+                          outlined
+                          prepend-inner-icon="mdi-account-question-outline"                          
+                          :return-object="false"
+                          :clearable="true"
+                          :small-chips="true"
+                          :multiple="false">
+                        </v-combobox>
+                      </v-col>
+
+                     <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                        <v-combobox
+                          label="Semester"
+                          v-model="formData.semester"
+                          :items="semesterOptions"
+                          outlined
+                          prepend-inner-icon="mdi-school"
+                          :rules="requiredRules">
+                        </v-combobox>
+                     </v-col>
+                      
+                    <v-col cols="12" md="4"class="mb-0 tight-vertical-col">
+                       <v-text-field
+                          label="E-Mail"
+                          v-model="formData.email"
+                          outlined
+                          :rules="emailRules"
+                          prepend-inner-icon="mdi-email-outline" />
+                    </v-col>
+
+                    <v-col cols="12" md="4"class="mb-0 tight-vertical-col"> <!-- counter="10" -->
+                       <v-text-field
+                          label="Phone Number"
+                          v-model="formData.phoneNumber"
+                          outlined                          
+                          :rules="numberRules"
+                          prepend-inner-icon="mdi-cellphone" />
+                    </v-col>
+              </v-row>
+              </v-form>
+              </v-container>
+<!-- --------------------------------------------- Educational Background ----------------------------------------------------------> 
+              <v-container>
+              <v-form
+                     ref="form"
+                     v-model="valid"
+                     lazy-validation
+                     :style="{background: $vuetify.theme.themes[theme].formBackground}"
+                     class="elevation-5 rounded-lg px-5 py-7">
+              <v-row>
+                         <v-col cols="12">
+                            <div class="headline applicant-headline" >Education Background</div>
+                         </v-col>    
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Student Status"
+                             v-model="formData.studentStatus"
+                             :items="studentStatusOptions"
+                             outlined
+                             prepend-inner-icon="mdi-account-group-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>   
+                         
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Student Degree Status"
+                             v-model="formData.studentDegreeStatus"
+                             :items="studentDegreeStatusOptions"
+                             outlined
+                             prepend-inner-icon="mdi-school-outline"                          
+                             :return-object="false"
+                             :clearable="true"
+                             :small-chips="true"
+                             :multiple="false"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col> 
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Present Academic Year"
+                             v-model="formData.precentacadamicyear"
+                             :items="precentacadamicyearOptions"
+                             outlined
+                             prepend-inner-icon="mdi-school-outline" 
+                             :return-object="false"
+                             :clearable="true"
+                             :small-chips="true"
+                             :multiple="false"                         
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="The Academic Year You Are Going"
+                             v-model="formData.Goingacadamicyear"
+                             :items="GoingacadamicyearOptions"
+                             outlined
+                             prepend-inner-icon="mdi-arrow-left-bold-box-outline" 
+                             :return-object="false"
+                             :clearable="true"
+                             :small-chips="true"
+                             :multiple="false"                         
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Are you a Graduating Student or a Delay Graduation Student"
+                             v-model="formData.Graduatingdata"
+                             :items="Graduatingdataoption"
+                             outlined
+                             prepend-inner-icon="mdi-certificate-outline"                          
+                             :return-object="false"
+                             :clearable="true"
+                             :small-chips="true"
+                             :multiple="false"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="2" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                              label=" Semester Average Score "
+                              v-model="formData.semesteraveragescore"
+                              outlined
+                              prepend-inner-icon="mdi-pencil-box-outline"
+                              :rules="requiredRules"/>
+                        </v-col>
+
+                        <v-col cols="12" md="2" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                              label=" Ranking, Among 100% "
+                              v-model="formData.ranking"
+                              outlined
+                              prepend-inner-icon="mdi-margin"
+                              :rules="requiredRules"/>
+                        </v-col>   
+                        
+                        <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Taipei Tech Program"
+                             v-model="formData.taipeiTechProgram"
+                             :items="taipeiTechProgramOptions"
+                             outlined
+                             prepend-inner-icon="mdi-school"
+                             :rules="requiredRules">
+                           </v-combobox>
+                        </v-col>
+                         
+                        <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Field of study (Check One) (Only Taiwanese)"
+                             v-model="formData.fieldofstudy"
+                             :items="fieldofstudyoptions"
+                             outlined
+                             prepend-inner-icon="mdi-book-multiple-outline"
+                             >
+                           </v-combobox>
+                        </v-col>
+
+                        <v-col cols="12" md="2" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="English or Other Language Proficiency"
+                             v-model="formData.languageProficiency"
+                             :items="languageProficiencyOptions"
+                             outlined
+                             prepend-inner-icon="mdi-translate"                             
+                             :return-object="false"
+                             :clearable="true"
+                             :small-chips="true"
+                             :multiple="false">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="2" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                              label=" Language Certification Score "
+                              v-model="formData.languageCertificationScore"
+                              outlined
+                              prepend-inner-icon="mdi-pencil-box-outline"
+                              />
+                        </v-col>
+              </v-row>                                          
+              </v-form>
+              </v-container>    
+<!-- --------------------------------------------- University Selection  ----------------------------------------------------------> 
+              <v-container>
+              <v-form
+                     ref="form"
+                     v-model="valid"
+                     lazy-validation
+                     :style="{background: $vuetify.theme.themes[theme].formBackground}"
+                     class="elevation-5 rounded-lg px-5 py-7">
+              <v-row>
+                        <v-col cols="12">
+                           <div class="headline applicant-headline" >Choosing University</div>
+                        </v-col>   
+
+                        <v-col cols="12" md="8" class="mb-0 tight-vertical-col">
+                           <v-select
+                             v-model="formData.PurposeofStudy"
+                             :items="PurposeofStudyoptions"
+                             label="Purpose of Study"
+                             outlined
+                             :rules="requiredRules"
+                             prepend-inner-icon="mdi-flask-empty-outline"
+                             return-object>
+                           </v-select>
+                        </v-col> 
+
+                        <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                           label="Option 1"
+                           v-model="formData.option1"
+                           :items="UniversityOptions"
+                           outlined
+                           prepend-inner-icon="mdi-numeric-1-box-outline"
+                           :rules="requiredRules">
+                           </v-combobox>
+                        </v-col>  
+                        
+                        <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 2"
+                             v-model="formData.option2"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-2-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 3"
+                             v-model="formData.option3"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-3-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 4"
+                             v-model="formData.option4"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-4-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 5"
+                             v-model="formData.option5"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-5-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 6"
+                             v-model="formData.option6"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-6-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 7"
+                             v-model="formData.option7"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-7-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 8"
+                             v-model="formData.option8"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-8-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                         <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 9"
+                             v-model="formData.option9"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-9-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+
+                        <v-col cols="12" md="4" class="mb-0 tight-vertical-col">
+                           <v-combobox
+                             label="Option 10"
+                             v-model="formData.option10"
+                             :items="UniversityOptions"
+                             outlined
+                             prepend-inner-icon="mdi-numeric-10-box-outline"
+                             :rules="requiredRules">
+                           </v-combobox>
+                         </v-col>
+              </v-row>                                          
+              </v-form>
+              </v-container> 
+<!-- --------------------------------------------- Scholarship Application  ---------------------------------------------------------->
+              <v-container>
+              <v-form
+                           ref="form"
+                           v-model="valid"
+                           lazy-validation
+                           :style="{background: $vuetify.theme.themes[theme].formBackground}"
+                           class="elevation-5 rounded-lg px-5 py-7">
+              <v-row>
+                              <v-col cols="12">
+                                 <div class="headline applicant-headline" >Scholarship Application (Only Taiwanese)</div>
+                              </v-col>   
+      
+                              <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                                 <v-select
+                                 v-model="formData.moescholarship"
+                                 :items="MOEoptons"
+                                 label="是否申請教育部計畫獎學金"
+                                 outlined                           
+                                 prepend-inner-icon="mdi-school"
+                                 return-object>
+                                 </v-select>
+                              </v-col> 
+      
+                              <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                                 <v-select
+                                 v-model="formData.lowincome"
+                                 :items="lowincomeitems"
+                                 label="是否符合低收入戶/中低收入戶 "
+                                 outlined                           
+                                 prepend-inner-icon="mdi-cash-100"
+                                 return-object>
+                                 </v-select>
+                              </v-col> 
+      
+                              <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                                 <v-select
+                                 v-model="formData.childrenofAboriginal"
+                                 :items="childrenofAboriginalitems"
+                                 label="是否為原住民子女"
+                                 outlined                           
+                                 prepend-inner-icon="mdi-human-child"
+                                 return-object>
+                                 </v-select>
+                              </v-col> 
+      
+                              <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                                 <v-select
+                                 v-model="formData.newresident"
+                                 :items="newresidentitems"
+                                 label="是否為新住民"
+                                 outlined                           
+                                 prepend-inner-icon="mdi-home-group"
+                                 return-object>
+                                 </v-select>
+                              </v-col> 
+      
+                              <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                                 <v-select
+                                 v-model="formData.awardwinning"
+                                 :items="awardwinningitems"
+                                 label="是否為新住民"
+                                 outlined                           
+                                 prepend-inner-icon="mdi-trophy-award"
+                                 return-object>
+                                 </v-select>
+                              </v-col> 
+              </v-row>                                          
+              </v-form>
+              </v-container> 
+<!-- --------------------------------------------- Contact Information ---------------------------------------------------------->
+              <v-container>
+              <v-form
+                     ref="form"
+                     v-model="valid"
+                     lazy-validation
+                     :style="{background: $vuetify.theme.themes[theme].formBackground}"
+                     class="elevation-5 rounded-lg px-5 py-7">
+              <v-row>
+                        <v-col cols="12">
+                           <div class="headline applicant-headline" >Contact Information</div>
+                        </v-col>   
+
+                        <v-col cols="12" md="6"class="mb-0 tight-vertical-col"> <!-- counter="10" -->
+                        <v-text-field
+                          label="Telephone Number"
+                          v-model="formData.tnumber"
+                          outlined                          
+                          :rules="numberRules"
+                          prepend-inner-icon="mdi-phone-classic" />
+                        </v-col>
+
+                        <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                             label="Address"
+                             v-model="formData.address"
+                             outlined
+                             :rules="requiredRules"  
+                             prepend-inner-icon="mdi-map-marker" />
+                         </v-col>
+                         
+                         <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                             label="Alternative E-Mail"
+                             v-model="formData.alternativeEmail"
+                             outlined
+                             :rules="emailRules"
+                             prepend-inner-icon="mdi-email-outline" />
+                         </v-col>
+
+                         <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                             label="Contact Person"
+                             v-model="formData.contactPerson"
+                             outlined    
+                             :rules="requiredRules"                         
+                             prepend-inner-icon="mdi-account-box-outline" />
+                         </v-col>
+                         
+                         <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                             label="Relationship"
+                             v-model="formData.relationship"
+                             outlined                   
+                             :rules="requiredRules"          
+                             prepend-inner-icon="mdi-relation-one-to-many" />
+                         </v-col>
+                         
+                         <v-col cols="12" md="6" class="mb-0 tight-vertical-col">
+                           <v-text-field
+                             label="Phone No. of Contact Person"
+                             v-model="formData.contactPersonPhone"
+                             outlined
+                             :rules="numberRules"
+                             prepend-inner-icon="mdi-phone" />
+                         </v-col>
+              </v-row>                                          
+              </v-form>
+              </v-container> 
+<!-- --------------------------------------------- Submit ---------------------------------------------------------->
+              <v-container>
+              <v-row>
+                <v-col cols="12">
+                   <v-btn
+                      color="primary"
+                      @click="validate"
+                      >
+                      Submit
+                   </v-btn>
+                </v-col>
+              </v-row>          
+              </v-container>
+           <!-- <div class="caption mt-10">{{ formData }}</div> -->
+        </v-main>
+     </v-app>
+<!-- --------------------------------------------- form is over here ---------------------------------------------------------->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.5.10/dist/vuetify.min.js"></script>
+<script>
+var app = new Vue({
+	el: "#app",
+	vuetify: new Vuetify({
+		theme: {
+			themes: {
+				light: {
+					primary: "#82b19f",
+					secondary: "#f4bf1c",
+					accent: "#47333c",
+					error: "#dc6276",
+					background: "#F6F5F4",
+					formBackground: "#f7f7f7"
+				},
+				dark: {
+					primary: "#82b19f",
+					background: "#181b1f",
+					formBackground: "#23272b"
+				}
+			}
+		}
+	}),
+	data: () => ({
+      menu: false,
+		valid: false,
+		calenderModal: false,
+		formLoading: false,
+      nationality: null,
+      vulnerableStudent: null,
+      semester: null,
+      studentStatus: null,
+      studentDegreeStatus: null,
+      precentacadamicyear: null,
+      Goingacadamicyear: null,
+      Graduatingdata: null,
+      semesteraveragescore: null, //NEEDTO CHECK
+      ranking: null,
+      taipeiTechProgram: null,
+      fieldofstudy: null,
+      languageProficiency: null,
+      languageCertificationScore: null,
+      moescholarship: null,
+      option1: null,
+      option2: null,
+      option3: null,
+      option4: null,
+      option5: null,
+      option6: null,
+      option7: null,
+      option8: null,
+      option9: null,
+      option10: null,
+      PurposeofStudy: null,
+      moescholarship: null,
+      lowincome: null,
+      childrenofAboriginal: null,
+      newresident: null,
+      awardwinning: null,
+      tnumber: null,
+      address: '',
+      alternativeEmail: '',
+      contactPerson: '',
+      relationship: '',
+      contactPersonPhone: '',
+      positions: [
+			"Trainee",
+			"Working Student",
+			"Intern",
+			"Junior",
+			"Senior",
+			"V-Level",
+			"C-Level"
+		],
+        positions1: [
+			"Workogng Student",
+			"Working Student",
+			"Intern",
+			"Junior",
+			"Senior",
+			"V-Level",
+			"C-Level"
+		],
+		formData: {
+			jobs: [{}],
+         dateOfBirth: null,
+		},
+		requiredRules: [(v) => !!v || "Please fill out this field!"],
+		numberRules: [
+			(v) => !!v || "Please fill out this field!",
+			(v) => Number.isInteger(Number(v)) || "Please enter numbers only!"
+		],
+		emailRules: [
+			(v) => !!v || "Please fill out the field!",
+			(v) =>
+				!v ||
+				/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
+				"E-mail must be valid"
+		],
+      genderRules: [
+         v => !!v || 'Selecting a gender is required',
+      ],
+      genderOptions: [
+         { text: 'Male', value: 'male' },
+         { text: 'Female', value: 'female' }
+      ],
+      vulnerableOptions: [
+         '無 / None',
+         '低收入戶 / Low-income household',
+         '中低收入戶 / Middle and low-income household',
+      ],
+      nationalities: [
+         'Afghan', 'Albanian', 'Algerian', 'American', 'Andorran', 'Angolan', 'Antiguans', 'Argentinean',
+         'Armenian', 'Australian', 'Austrian', 'Azerbaijani', 'Bahamian', 'Bahraini', 'Bangladeshi',
+         'Barbadian', 'Barbudans', 'Batswana', 'Belarusian', 'Belgian', 'Belizean', 'Beninese',
+         'Bhutanese', 'Bolivian', 'Bosnian', 'Brazilian', 'British', 'Bruneian', 'Bulgarian', 'Burkinabe',
+         'Burmese', 'Burundian', 'Cambodian', 'Cameroonian', 'Canadian', 'Cape Verdean', 'Central African',
+         'Chadian', 'Chilean', 'Chinese', 'Colombian', 'Comoran', 'Congolese', 'Costa Rican', 'Croatian',
+         'Cuban', 'Cypriot', 'Czech', 'Danish', 'Djibouti', 'Dominican', 'Dutch', 'East Timorese',
+         'Ecuadorean', 'Egyptian', 'Emirian', 'Equatorial Guinean', 'Eritrean', 'Estonian', 'Ethiopian',
+         'Fijian', 'Filipino', 'Finnish', 'French', 'Gabonese', 'Gambian', 'Georgian', 'German', 'Ghanaian',
+         'Greek', 'Grenadian', 'Guatemalan', 'Guinea-Bissauan', 'Guinean', 'Guyanese', 'Haitian',
+         'Herzegovinian', 'Honduran', 'Hungarian', 'Icelander', 'Indian', 'Indonesian', 'Iranian', 'Iraqi',
+         'Irish', 'Israeli', 'Italian', 'Ivorian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani',
+         'Kenyan', 'Kittian and Nevisian', 'Kuwaiti', 'Kyrgyz', 'Laotian', 'Latvian', 'Lebanese', 'Liberian',
+         'Libyan', 'Liechtensteiner', 'Lithuanian', 'Luxembourger', 'Macedonian', 'Malagasy', 'Malawian',
+         'Malaysian', 'Maldivian', 'Malian', 'Maltese', 'Marshallese', 'Mauritanian', 'Mauritian', 'Mexican',
+         'Micronesian', 'Moldovan', 'Monacan', 'Mongolian', 'Moroccan', 'Mosotho', 'Motswana', 'Mozambican',
+         'Namibian', 'Nauruan', 'Nepalese', 'New Zealander', 'Ni-Vanuatu', 'Nicaraguan', 'Nigerian',
+         'Nigerien', 'North Korean', 'Northern Irish', 'Norwegian', 'Omani', 'Pakistani', 'Palauan',
+         'Panamanian', 'Papua New Guinean', 'Paraguayan', 'Peruvian', 'Polish', 'Portuguese', 'Qatari',
+         'Romanian', 'Russian', 'Rwandan', 'Saint Lucian', 'Salvadoran', 'Samoan', 'San Marinese',
+         'Sao Tomean', 'Saudi', 'Scottish', 'Senegalese', 'Serbian', 'Seychellois', 'Sierra Leonean',
+         'Singaporean', 'Slovakian', 'Slovenian', 'Solomon Islander', 'Somali', 'South African', 'South Korean',
+         'Spanish', 'Sri Lankan', 'Sudanese', 'Surinamer', 'Swazi', 'Swedish', 'Swiss', 'Syrian', 'Taiwanese',
+         'Tajik', 'Tanzanian', 'Thai', 'Togolese', 'Tongan', 'Trinidadian or Tobagonian', 'Tunisian',
+         'Turkish', 'Tuvaluan', 'Ugandan', 'Ukrainian', 'Uruguayan', 'Uzbekistani', 'Venezuelan', 'Vietnamese',
+         'Welsh', 'Yemenite', 'Zambian', 'Zimbabwean'
+         ],
+         semesterOptions: [
+            '113學年度第一學期 2024 Fall Semester',
+            '113學年度第二學期 2025 Spring Semester'
+         ],
+         studentStatusOptions: [
+         '本籍生 (Taiwanese Student)',
+         '外籍生 (International Student)',
+         '僑生 (含陸生) (Overseas Chinese & Chinese student)'
+         ],
+         studentDegreeStatusOptions: [
+            '大學 Bachelor',
+            '碩士 Master',
+            '博士 Doctor',
+            '四技',
+            '四技進修部',
+            '二技在職專班',
+            '五專',
+            '其他 _____ '
+         ],
+         precentacadamicyearOptions: [ '2nd year', '3nd year','4nd year','5nd year','6nd year','7nd year','8nd year','9nd year'],
+         GoingacadamicyearOptions: [ '2nd year', '3nd year','4nd year','5nd year','6nd year','7nd year','8nd year','9nd year'],
+         Graduatingdataoption: [ 'Yes', 'Type...'],
+         taipeiTechProgramOptions: [
+            'College of Mechanical & Electrical Engineering - Mechanical Engineering', 'College of Mechanical & Electrical Engineering - Vehicle Engineering',
+            'College of Mechanical & Electrical Engineering - Energy & Refrigerating Air-Conditioning Engineering', 'College of Mechanical & Electrical Engineering - Mechatronic Engineering',
+            'College of Mechanical & Electrical Engineering - Manufacturing Technology', 'College of Mechanical & Electrical Engineering - Automation Technology',
+            'College of Mechanical & Electrical Engineering - International Master Program in Mechanical and Automation Engineering', 'College of Mechanical & Electrical Engineering - International Graduate Program in CMEE',
+            'College of Mechanical & Electrical Engineering - International Master Program in Energy Refrigerating, Air-Conditioning & Vehicle', 'College of Electrical Engineering and Computer Science - Department of Electrical Engineering',
+            'College of Electrical Engineering and Computer Science - Department of Electronic Engineering', 'College of Electrical Engineering and Computer Science - Department of Electro-Optical Engineering',
+            'College of Electrical Engineering and Computer Science - Department of Computer Science & Information Engineering', 'College of Electrical Engineering and Computer Science - International Program in Electrical Engineering & Computer Science (EECS)',
+            'College of Engineering - Chemical Engineering & Biotechnology', 'College of Engineering - Master Program of Chemical Engineering',
+            'College of Engineering - Doctoral Program of Chemical Engineering', 'College of Engineering - Master Program of Biochemical and Biomedical Engineering',
+            'College of Engineering - Civil Engineering', 'College of Engineering - Master Program of Civil & Disaster Prevention Engineering',
+            'College of Engineering - Doctoral Program of Civil & Disaster Prevention Engineering', 'College of Engineering - Environmental Engineering & Management',
+            'College of Engineering - Materials & Mineral Resources Engineering', 'College of Engineering - Mineral Resources Engineering',
+            'College of Engineering - Molecular Science & Engineering', 'College of Engineering - Master Program of Organic & Polymeric Materials',
+            'College of Engineering - Doctoral Program of Organic & Polymeric Materials', 'College of Engineering - International Graduate Program in Energy and Optoelectronic Materials (EOMP)',
+            'College of Management - Industrial Engineering & Management', 'College of Management - Business Management',
+            'College of Management - PhD Program in Management, College of Management', 'College of Management - Information and Finance Management',
+            'College of Management - Master Program of Information and Finance Management', 'College of Management - International Master of Business Administration Program (IMBA)',
+            'College of Design - Industrial Design', 'College of Design - Architecture',
+            'College of Design - Master Program in Innovation and Design', 'College of Design - Master Program in Architecture & Urban Design',
+            'College of Design - Doctoral Program in Design', 'College of Design - Interaction Design',
+            'College of Design - International Program for Interaction Design and Innovation', 'College of Humanities and Social Science - English',
+            'College of Humanities and Social Science - Technological & Vocational Education', 'College of Humanities and Social Science - Intellectual Property',
+            'College of Humanities and Social Science - Cultural Vocation Development'
+            ],
+            fieldofstudyoptions:['農林漁牧 Agriculture, Forestry, Fishery, Animal Husbandry','生醫科技 Biotechnology','商業管理 Business Management','社會科學 Social Sciences','理工 Polytechnic','語文、教育 Linguistics, Pedagogy',
+            '藝術、建築規劃與設計 Art, Architecture Planning & Design','餐旅、運動休閒管理 Hospitality, Sports & Leisure Management'],
+            languageProficiencyOptions: [
+               'TOEFL', 'IELTS', 'TOEIC',
+               'Goethe-Zertifikat', 'DELF',
+               'DELE', 'JLPT', 'TOPIK',
+               'Other Foreign Language Proficiency'
+            ],
+            UniversityOptions: [
+               '愛爾蘭_Institute of Technology, Sligo (ATU Sligo)', '德國_Karlsruhe University of Applied Sciences',
+               '德國_Trier University of Applied Science', '德國_University of Applied Sciences Potsdam',
+               '德國_FHWS, University of Applied Sciences Würzburg-Schweinfurt', '德國_University of Applied Sciences Zwickau',
+               '德國_Albstadt-Sigmaringen University', '德國_weißensee Academy of Art Berlin',
+               '德國_Aschaffenburg University of Applied Sciences', '德國_Aachen University of Applied Sciences',
+               '德國_Cologne Business School', '德國_Dresden University of Applied Sciences',
+               '德國_Esslingen University of Applied Sciences', '德國_Technische Universitat Ilmenau (TU IL)',
+               '法國_ESIEE Paris', '法國_Institut Sup\'Biotech de Paris',
+               '法國_SIGMA Clermont', '法國_ESTIA',
+               '法國_CESI Ecole d’ingénieurs', '法國_EPF Graduate School of Engineering',
+               '法國_IAE Montpellier | Ecole University of Management', '比利時_University of Liège',
+               '比利時_University of Mons', '羅馬尼亞_West University of Timisoara',
+               '捷克_Technical University of Liberec', '捷克_University of Chemistry and Technology, Prague (UCT Prague)',
+               '匈牙利_BME - Budapest University of Technology and Economics', '波蘭_Warsaw University of Technology',
+               '立陶宛_Vilnius University', '立陶宛_Vilnius Gediminas Technical University(VGTU)',
+               '拉脫維亞_Riga Technical University', '愛沙尼亞_Tallinn University of Technology',
+               '義大利_University of International Studies of Rome (UNINT)', '義大利_University of Verona',
+               '西班牙_UNIVERSITAT JAUME I', '西班牙_Universidad de Las Palmas de Gran Canaria (ULPGC)',
+               '西班牙_Universitat Internacional de Catalunya', '葡萄牙_University Institute of Lisbon (ISCTE-IUL)',
+               '奧地利_Technische Universität Wien (TU Wien)', '奧地利_Kufstein University of Applied Sciences',
+               '奧地利_University of Applied Science Upper Austria', '奧地利_Salzburg University of Applied Sciences',
+               '俄羅斯_Tomsk state university', '俄羅斯_Ural Federal University',
+               '土耳其_METU (Middle East Technical University)', '日本_Nagoya Institute of Technology',
+               '日本_Kyushu Institute of Technology', '日本_Chiba Institute of Technology',
+               '日本_Osaka Institute of Technology', '日本_Shibaura Institute of Technology',
+               '日本_Future University Hakodate', '日本_Osaka University',
+               '日本_Kyushu University, Faculty of Design', '日本_Kyushu University, School of Interdisciplinary Science and Innovation',
+               '日本_Tokyo University of Science', '日本_Tohoku University',
+               '韓國_Sungkyunkwan University (SKKU)', '韓國_Ewha Womans University',
+               '韓國_Dongguk University', '韓國_Chungbuk National University(CBNU)',
+               '韓國_Kookmin University', '韓國_Incheon National University',
+               '韓國_Gachon University', '越南_Dalat University',
+               '馬來西亞_Universiti Teknologi Malaysia (UTM)', '泰國_King Mongkut\'s University of Technology Thonburi (KMUTT)',
+               '泰國_King Mongkut\'s Institute of Technology Ladkrabang (KMITL)', '印尼_Institute Teknologi Bandung (ITB)',
+               '印尼_BINUS University', '印尼_University of Muhammadiyah Semarang',
+               '印度_Veltech Ranarajan Dr.Sagunthala R&D Institute of Science and Technology', '印度_SRM University',
+               '印度_PES University', '印度_Indian Institute of Technology Guwahati(IITG)',
+               '印度_Indian Institute of Technology Delhi(IITD)', '瓜地馬拉_Universidad del Istmo Guatemala',
+               '瓜地馬拉_Universidad del Valle de Guatemala', '美國_University of Michigan-Dearborn',
+               '美國_St. Mary\'s University', '澳大利亞_University of South Australia',
+               '澳大利亞_Western Sydney University', '澳大利亞_University of Southern Queensland'
+               ],
+               PurposeofStudyoptions: ['Exchange','Research'],
+               MOEoptons: ['否 (No)','If Yes 學海飛颺','學海惜珠','臺奧計畫'],
+               lowincomeitems:['否','是 (如勾選”是”，請附上戶籍地縣市政府開立之證明)'],
+               childrenofAboriginalitems: ['否','是'],
+               newresidentitems: ['否','是 (備註: 經過跨國通婚、或其它原因取得中華民國國籍者)'],
+               awardwinningitems: ['否','是 (如勾選”是”，請附上國際性競賽之獲獎證明)']
+
+
+	}),
+	methods: {
+		deleteRow(index) {
+			this.formData.jobs.splice([index], 1);
+		},
+		addRow() {
+			this.formData.jobs.push({});
+		},
+		moveUp(index) {
+			let temp1 = this.formData.jobs[index];
+			let temp2 = this.formData.jobs[index - 1];
+			this.$set(this.formData.jobs, index, temp2);
+			this.$set(this.formData.jobs, index - 1, temp1);
+		},
+		moveDown(index) {
+			let temp1 = this.formData.jobs[index];
+			let temp2 = this.formData.jobs[index + 1];
+			this.$set(this.formData.jobs, index, temp2);
+			this.$set(this.formData.jobs, index + 1, temp1);
+		},
+		validate() {
+			if (this.$refs.form.validate()) {
+				console.log("submit");
+				this.formLoading = true;
+				// Timeout Function only for showing loading progress
+				setTimeout(() => {
+					alert(JSON.stringify(this.formData));
+					this.formLoading = false;
+					this.reset();
+				}, 4000);
+			}
+		},
+		validateDate(dateRange, index) {
+			if (dateRange.length === 2) {
+				this.calenderModal = false;
+			}
+		},
+		reset() {
+			this.$refs.form.reset();
+		},
+		resetValidation() {
+			this.$refs.form.resetValidation();
+		},
+		darkMode() {
+			this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+		}
+        },
+        computed: {
+            theme() {
+                return this.$vuetify.theme.dark ? "dark" : "light";
+            }
+        }
+    });
+</script>
+</body>
+</html>
